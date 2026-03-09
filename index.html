@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>サブロク☆ポリス かんたん残業シミュレーター</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👮</text></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 
@@ -325,9 +326,14 @@
   <div class="card" id="gaugeCard" style="display:none">
     <div class="card-label">📊 残業時間ゲージ</div>
     <div class="gauge-wrap">
-      <div class="gauge-labels"><span>0h</span><span style="color:var(--warn)">45h</span><span style="color:var(--danger)">80h</span></div>
-      <div class="gauge-track">
+      <div style="position:relative; height:18px; margin-bottom:4px;">
+        <span style="position:absolute; left:0; font-size:13px; color:var(--muted)">0h</span>
+        <span style="position:absolute; left:calc(45/80*100% - 10px); font-size:13px; color:var(--warn)">45h</span>
+        <span style="position:absolute; right:0; font-size:13px; color:var(--danger)">80h</span>
+      </div>
+      <div class="gauge-track" style="position:relative;">
         <div class="gauge-fill" id="gaugeFill" style="width:0%"></div>
+        <div style="position:absolute; left:calc(45/80*100%); top:0; height:100%; width:2px; background:var(--warn); opacity:0.6;"></div>
       </div>
     </div>
 
