@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>サブロク☆ポリス かんたん残業シミュレーター</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f42;
+    --ok: #00e5a0;
+    --warn: #ffd24d;
+    --danger: #ff5c5c;
+    --critical: #ff2d6b;
+    --accent: #4f8eff;
+    --text: #e8eaf0;
+    --muted: #9ba3c4;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Zen Kaku Gothic New', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-icon { font-size: 28px; }
+  .header-title { font-size: 18px; font-weight: 900; letter-spacing: 0.04em; }
+  .header-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* ── PAGES ── */
+  .page { padding: 20px; max-width: 600px; margin: 0 auto; }
+
+  /* ── SECTION CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-label {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── MONTH SELECTOR ── */
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+  .month-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 10px 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .month-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .month-btn.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* ── INPUT ROW ── */
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .input-group label {
+    display: block;
+    font-size: 14px;
+  }
+  .input-group input, .input-group select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 20px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  .input-group input:focus, .input-group select:focus {
+    border-color: var(--accent);
+  }
+  .input-group select option { background: var(--surface2); }
+
+  /* ── BIG NUMBER ── */
+  .big-num-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .big-num-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .big-num-box .label { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 4px; }
+  .big-num-box .value { font-family: var(--mono); font-size: 28px; font-weight: 700; }
+
+  /* ── STATUS BANNER ── */
+  .status-banner {
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+  }
+  .status-banner .status-icon { font-size: 32px; flex-shrink: 0; }
+  .status-banner .status-title { font-size: 17px; font-weight: 900; }
+  .status-banner .status-msg { font-size: 14px; margin-top: 3px; line-height: 1.5; }
+  .status-ok    { background: rgba(0,229,160,0.08); border-color: var(--ok); }
+  .status-warn  { background: rgba(255,210,77,0.08); border-color: var(--warn); }
+  .status-danger{ background: rgba(255,92,92,0.1);  border-color: var(--danger); }
+  .status-critical{ background: rgba(255,45,107,0.12); border-color: var(--critical); }
+  .ok-color     { color: var(--ok); }
+  .warn-color   { color: var(--warn); }
+  .danger-color { color: var(--danger); }
+  .critical-color{ color: var(--critical); }
+
+  /* ── GAUGE BAR ── */
+  .gauge-wrap { margin-bottom: 8px; }
+  .gauge-labels { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+  .gauge-track {
+    height: 10px;
+    background: var(--surface2);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+  }
+  .gauge-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1), background 0.3s;
+  }
+  .gauge-markers {
+    position: relative;
+    height: 14px;
+    margin-top: 2px;
+  }
+  .gauge-marker {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── DETAIL GRID ── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .detail-item {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .detail-item .d-label { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .detail-item .d-val { font-family: var(--mono); font-size: 18px; font-weight: 700; }
+
+  /* ── ALERT CHIPS ── */
+  .alert-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip {
+    font-size: 13px;
+  }
+  .chip-ok     { border-color: var(--ok); color: var(--ok); }
+  .chip-warn   { border-color: var(--warn); color: var(--warn); background: rgba(255,210,77,0.08); }
+  .chip-danger { border-color: var(--danger); color: var(--danger); background: rgba(255,92,92,0.08); }
+
+  /* ── REMAINING DAYS INPUT ── */
+  .remain-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .remain-row label { font-size: 14px; color: var(--muted); flex-shrink: 0; }
+  .remain-row input {
+    width: 80px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 18px;
+    padding: 8px 12px;
+    outline: none;
+    text-align: center;
+  }
+  .remain-row input:focus { border-color: var(--accent); }
+  .remain-hint { font-size: 13px; color: var(--muted); }
+
+  /* ── HELPER TEXT ── */
+  .helper { font-size: 14px; color: var(--muted); line-height: 1.6; margin-top: 8px; }
+  .helper strong { color: var(--text); }
+
+  /* ── SEPARATOR ── */
+  .sep { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+  /* ── MOBILE ADJUSTMENTS ── */
+  @media (max-width: 420px) {
+    .month-grid { grid-template-columns: repeat(4, 1fr); }
+    .big-num-row { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .header-title { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">👮</div>
+  <div>
+    <div class="header-title">サブロク☆ポリス</div>
+    <div class="header-sub">かんたん36協定シミュレーター</div>
+  </div>
+</div>
+
+<!-- ======== SIMULATOR PAGE ======== -->
+<div class="page">
+
+  <!-- 月選択 -->
+  <div class="card">
+    <div class="card-label">📅 対象月を選択</div>
+    <div class="month-grid" id="monthGrid"></div>
+  </div>
+
+  <!-- 実働時間入力 -->
+  <div class="card">
+    <div class="card-label">⏱ 今月の実働時間を入力</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>実働（時間）</label>
+        <input type="number" id="inHour" min="0" max="400" placeholder="例：180" oninput="calc()">
+      </div>
+      <div class="input-group">
+        <label>実働（分）</label>
+        <select id="inMin" onchange="calc()">
+          <option value="0">00分</option>
+          <option value="15">15分</option>
+          <option value="30">30分</option>
+          <option value="45">45分</option>
+        </select>
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>日曜出勤（時間）</label>
+        <input type="number" id="sunHour" min="0" max="40" placeholder="0" oninput="calc()">
+      </div>
+      <div class="input-group">
+        <label>日曜出勤（分）</label>
+        <select id="sunMin" onchange="calc()">
+          <option value="0">00分</option>
+          <option value="15">15分</option>
+          <option value="30">30分</option>
+          <option value="45">45分</option>
+        </select>
+      </div>
+    </div>
+    <div class="remain-row">
+      <label>残り営業日</label>
+      <input type="number" id="remainDays" min="0" max="31" placeholder="10" oninput="calc()">
+      <span class="remain-hint">日（月中ならここを更新）</span>
+    </div>
+  </div>
+
+  <!-- ステータスバナー -->
+  <div id="statusBanner" class="status-banner status-ok" style="display:none">
+    <div class="status-icon" id="statusIcon"></div>
+    <div>
+      <div class="status-title" id="statusTitle"></div>
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+  </div>
+
+  <!-- ゲージ -->
+  <div class="card" id="gaugeCard" style="display:none">
+    <div class="card-label">📊 残業時間ゲージ</div>
+    <div class="gauge-wrap">
+      <div class="gauge-labels"><span>0h</span><span style="color:var(--warn)">45h</span><span style="color:var(--danger)">80h</span></div>
+      <div class="gauge-track">
+        <div class="gauge-fill" id="gaugeFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <hr class="sep">
+
+    <!-- 数値 -->
+    <div class="big-num-row">
+      <div class="big-num-box">
+        <div class="label">時間外労働（今月）</div>
+        <div class="value" id="overtimeVal">—</div>
+      </div>
+      <div class="big-num-box">
+        <div class="label">80h まで余裕</div>
+        <div class="value" id="remainVal">—</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-item">
+        <div class="d-label">法定労働時間（今月）</div>
+        <div class="d-val" id="legalVal">—</div>
+      </div>
+      <div class="detail-item">
+        <div class="d-label">日曜出勤（控除）</div>
+        <div class="d-val" id="sunVal">—</div>
+      </div>
+      <div class="detail-item">
+        <div class="d-label">残り日数で必要な平均</div>
+        <div class="d-val" id="avgNeeded">—</div>
+      </div>
+      <div class="detail-item">
+        <div class="d-label">45h判定（特別条項）</div>
+        <div class="d-val" id="ot45Val">—</div>
+      </div>
+    </div>
+
+    <div class="alert-chips" id="alertChips"></div>
+  </div>
+
+  <p class="helper" style="margin-bottom:24px">
+    <strong>使い方：</strong>月を選んで実働時間を入力しよう。「このままだとどうなるか」をシミュレートできます。残り営業日も入れるとさらに予測精度が上がります。
+  </p>
+</div>
+
+
+<script>
+// ======== 法定労働時間テーブル ========
+const LEGAL = {
+  1: 177.14, 2: 160.00, 3: 177.14, 4: 171.43,
+  5: 177.14, 6: 171.43, 7: 177.14, 8: 177.14,
+  9: 171.43, 10: 177.14, 11: 171.43, 12: 177.14
+};
+
+let selectedMonth = new Date().getMonth() + 1;
+
+// ======== 月グリッド生成 ========
+function buildMonthGrid() {
+  const grid = document.getElementById('monthGrid');
+  grid.innerHTML = '';
+  for (let m = 1; m <= 12; m++) {
+    const btn = document.createElement('button');
+    btn.className = 'month-btn' + (m === selectedMonth ? ' selected' : '');
+    btn.textContent = m + '月';
+    btn.onclick = () => { selectedMonth = m; buildMonthGrid(); calc(); };
+    grid.appendChild(btn);
+  }
+}
+
+// ======== 計算エンジン ========
+function hStr(h) {
+  const hh = Math.floor(Math.abs(h));
+  const mm = Math.round((Math.abs(h) - hh) * 60);
+  const sign = h < 0 ? '-' : '';
+  return `${sign}${hh}h${mm > 0 ? mm + 'm' : ''}`;
+}
+
+function calc() {
+  const inH = parseFloat(document.getElementById('inHour').value) || 0;
+  const inM = parseFloat(document.getElementById('inMin').value) || 0;
+  const sunH = parseFloat(document.getElementById('sunHour').value) || 0;
+  const sunM = parseFloat(document.getElementById('sunMin').value) || 0;
+  const remainDays = parseFloat(document.getElementById('remainDays').value);
+
+  const banner = document.getElementById('statusBanner');
+  const gaugeCard = document.getElementById('gaugeCard');
+
+  if (inH === 0 && inM === 0) {
+    banner.style.display = 'none';
+    gaugeCard.style.display = 'none';
+    return;
+  }
+
+  const actual = inH + inM / 60;
+  const sunday = sunH + sunM / 60;
+  const legal = LEGAL[selectedMonth];
+
+  // 時間外 = 実働 - 法定 - 日曜出勤
+  // 時間外の2段階計算
+  // 45h判定: 実働 - 法定 - 日曜（日曜出勤を控除）
+  const overtime45 = actual - legal - sunday;
+  // 80h判定: 実働 - 法定（日曜出勤を含む）
+  const overtime80 = actual - legal;
+  const remain80 = 80 - overtime80;
+
+  // ゲージ・アラートは80h判定ベース
+  const overtime = overtime80;
+
+  // ゲージ（0〜80hをパーセント）
+  const pct = Math.min(Math.max((overtime / 80) * 100, 0), 100);
+  const fill = document.getElementById('gaugeFill');
+  fill.style.width = pct + '%';
+  fill.style.background = overtime < 40 ? 'var(--ok)' :
+                           overtime < 60 ? 'var(--warn)' :
+                           overtime < 75 ? 'var(--danger)' : 'var(--critical)';
+
+  // 数値表示
+  document.getElementById('overtimeVal').textContent = overtime > 0 ? hStr(overtime) : '0h';
+  document.getElementById('remainVal').textContent = remain80 > 0 ? hStr(remain80) : '超過';
+  document.getElementById('legalVal').textContent = hStr(legal);
+  document.getElementById('sunVal').textContent = hStr(sunday);
+  document.getElementById('ot45Val').textContent = overtime45 > 45 ? `🔴 ${hStr(overtime45)}` : `✅ ${hStr(Math.max(overtime45,0))}`;
+
+  // 残り必要平均
+  if (!isNaN(remainDays) && remainDays > 0 && remain80 > 0) {
+    document.getElementById('avgNeeded').textContent = hStr(remain80 / remainDays) + '/日以内';
+  } else {
+    document.getElementById('avgNeeded').textContent = remainDays === 0 ? '月末' : '—';
+  }
+
+  // ステータス判定
+  let statusClass, icon, title, msg;
+  if (overtime80 < 0 && overtime45 < 0) {
+    statusClass = 'status-ok'; icon = '✅'; title = '問題なし';
+    msg = `法定労働時間内です。残業なし。`;
+  } else if (overtime45 < 45) {
+    statusClass = 'status-ok'; icon = '🟢'; title = 'OK — 第一段階内';
+    msg = `時間外（45h判定）${hStr(Math.max(overtime45,0))}。45h上限まで余裕あり。`;
+  } else if (overtime80 < 60) {
+    statusClass = 'status-warn'; icon = '⚠️'; title = '注意 — 特別条項突入';
+    msg = `時間外（45h判定）${hStr(overtime45)}で特別条項適用。80hまで残り ${hStr(remain80)}。`;
+  } else if (overtime80 < 75) {
+    statusClass = 'status-danger'; icon = '🚨'; title = '警告 — 80h接近中';
+    msg = `時間外（80h判定）${hStr(overtime80)}。80h上限まで残り ${hStr(remain80)}。ペース調整が必要です。`;
+  } else if (overtime80 < 80) {
+    statusClass = 'status-critical'; icon = '🚫'; title = '危険 — 80h目前！';
+    msg = `時間外（80h判定）${hStr(overtime80)}。残り ${hStr(remain80)} しかありません。今すぐ調整を！`;
+  } else {
+    statusClass = 'status-critical'; icon = '💥'; title = '違反 — 80h超過';
+    msg = `時間外（80h判定）${hStr(overtime80)}。協定上限を ${hStr(-remain80)} 超過。総務報告が必要です。`;
+  }
+
+  banner.className = 'status-banner ' + statusClass;
+  document.getElementById('statusIcon').textContent = icon;
+  document.getElementById('statusTitle').textContent = title;
+  document.getElementById('statusTitle').className = 'status-title ' + statusClass.replace('status-','') + '-color';
+  document.getElementById('statusMsg').textContent = msg;
+  banner.style.display = 'flex';
+  gaugeCard.style.display = 'block';
+
+  // アラートチップ
+  const chips = document.getElementById('alertChips');
+  chips.innerHTML = '';
+  if (overtime45 > 45) chips.innerHTML += `<span class="chip chip-warn">⚠ 特別条項適用</span>`;
+  if (overtime80 > 60) chips.innerHTML += `<span class="chip chip-danger">🚨 80h注意ライン</span>`;
+  if (overtime80 > 75) chips.innerHTML += `<span class="chip chip-danger">🚫 緊急ペースダウン</span>`;
+  if (overtime80 > 80) chips.innerHTML += `<span class="chip chip-danger">💥 総務報告必要</span>`;
+  if (overtime45 >= 35 && overtime45 < 45) chips.innerHTML += `<span class="chip chip-warn">📌 45h接近</span>`;
+}
+
+// ======== 初期化 ========
+buildMonthGrid();
+
+</script>
+</body>
+</html>
