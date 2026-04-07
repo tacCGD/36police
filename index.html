@@ -361,12 +361,12 @@
         <div class="d-val" id="sunVal">—</div>
       </div>
       <div class="detail-item">
-        <div class="d-label">残り日数で必要な平均</div>
-        <div class="d-val" id="avgNeeded">—</div>
+        <div class="d-label">残業の1日上限目安（45h判定）</div>
+        <div class="d-val" id="avg45Needed">—</div>
       </div>
       <div class="detail-item">
-        <div class="d-label">45h判定（特別条項）</div>
-        <div class="d-val" id="ot45Val">—</div>
+        <div class="d-label">残業の1日上限目安（80h判定）</div>
+        <div class="d-val" id="avgNeeded">—</div>
       </div>
     </div>
 
@@ -437,6 +437,7 @@ function calc() {
   // 80h判定: 実働 - 法定（日曜出勤を含む）
   const overtime80 = actual - legal;
   const remain80 = 80 - overtime80;
+  const remain45 = 45 - overtime45;
 
   // ゲージ・アラートは80h判定ベース
   const overtime = overtime80;
@@ -454,13 +455,23 @@ function calc() {
   document.getElementById('remainVal').textContent = remain80 > 0 ? hStr(remain80) : '超過';
   document.getElementById('legalVal').textContent = hStr(legal);
   document.getElementById('sunVal').textContent = hStr(sunday);
-  document.getElementById('ot45Val').textContent = overtime45 > 45 ? `🔴 ${hStr(overtime45)}` : `✅ ${hStr(Math.max(overtime45,0))}`;
 
-  // 残り必要平均
+  // 残り必要平均（80h）
   if (!isNaN(remainDays) && remainDays > 0 && remain80 > 0) {
     document.getElementById('avgNeeded').textContent = hStr(remain80 / remainDays) + '/日以内';
+  } else if (remain80 <= 0) {
+    document.getElementById('avgNeeded').textContent = '残業不可';
   } else {
-    document.getElementById('avgNeeded').textContent = remainDays === 0 ? '月末' : '—';
+    document.getElementById('avgNeeded').textContent = '—';
+  }
+
+  // 残り必要平均（45h）
+  if (!isNaN(remainDays) && remainDays > 0 && remain45 > 0) {
+    document.getElementById('avg45Needed').textContent = hStr(remain45 / remainDays) + '/日以内';
+  } else if (remain45 <= 0) {
+    document.getElementById('avg45Needed').textContent = '特別条項突入済';
+  } else {
+    document.getElementById('avg45Needed').textContent = '—';
   }
 
   // ステータス判定
