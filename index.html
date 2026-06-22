@@ -481,10 +481,10 @@ function calc() {
     statusClass = 'status-ok'; icon = '✅'; title = '問題なし';
     msg = `法定労働時間内です。残業なし。`;
   } else if (overtime45 < 45) {
-    statusClass = 'status-ok'; icon = '🟢'; title = 'OK — 第一段階内';
+    statusClass = 'status-ok'; icon = '✅'; title = 'OK — 第一段階内';
     msg = `時間外（45h判定）${hStr(Math.max(overtime45,0))}。45h上限まで余裕あり。`;
   } else if (overtime80 < 60) {
-    statusClass = 'status-warn'; icon = '⚠️'; title = '注意 — 特別条項突入';
+    statusClass = 'status-warn'; icon = '🔥'; title = '注意 — 特別条項突入';
     msg = `時間外（45h判定）${hStr(overtime45)}で特別条項適用。80hまで残り ${hStr(remain80)}。`;
   } else if (overtime80 < 75) {
     statusClass = 'status-danger'; icon = '🚨'; title = '警告 — 80h接近中';
@@ -508,11 +508,11 @@ function calc() {
   // アラートチップ
   const chips = document.getElementById('alertChips');
   chips.innerHTML = '';
-  if (overtime45 > 45) chips.innerHTML += `<span class="chip chip-warn">⚠ 特別条項適用</span>`;
+  if (overtime45 > 45) chips.innerHTML += `<span class="chip chip-warn">🔥 特別条項適用</span>`;
   if (overtime80 > 60) chips.innerHTML += `<span class="chip chip-danger">🚨 80h注意ライン</span>`;
   if (overtime80 > 75) chips.innerHTML += `<span class="chip chip-danger">🚫 緊急ペースダウン</span>`;
   if (overtime80 > 80) chips.innerHTML += `<span class="chip chip-danger">💥 総務報告必要</span>`;
-  if (overtime45 >= 35 && overtime45 < 45) chips.innerHTML += `<span class="chip chip-warn">📌 45h接近</span>`;
+  if (overtime45 >= 35 && overtime45 < 45) chips.innerHTML += `<span class="chip chip-warn">⚠️ 45h接近</span>`;
 }
 
 // ======== 初期化 ========
